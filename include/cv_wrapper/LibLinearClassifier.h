@@ -9,9 +9,9 @@ namespace cv_wrapper{
 		struct Param : public ClassifierParam{
 			int prob_n;
 			int prob_l;
-			double bias = -1;
+			float bias = -1;
 
-			std::map<int,double> class_weight;
+			std::map<int,float> class_weight;
 			LibLinear::parameter p;
 			std::string save_path="";
 
@@ -39,8 +39,8 @@ namespace cv_wrapper{
 		}
 		void train(cv::InputArray labeled,cv::InputArray label,cv::InputArray sampleIdx=cv::Mat(),cv::InputArray weight=cv::Mat());
 
-		double predict(const cv::Mat& data)override;
-		std::map<double,double> predict_probability(const cv::Mat& data)override;
+		float predict(const cv::Mat& data)override;
+		std::map<float,float> predict_probability(const cv::Mat& data)override;
 
 		CLONEABLE(LibLinearClassifier);
 	};

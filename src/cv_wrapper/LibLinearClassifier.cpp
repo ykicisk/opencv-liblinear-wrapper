@@ -15,23 +15,26 @@ namespace cv_wrapper {
 	void LibLinearClassifier::train(cv::InputArray data, cv::InputArray label, cv::InputArray sampleIdx,cv::InputArray weight)
 	{
 		cv::Mat dataMat = data.getMat();
-		std::vector<double> labelvec = label.getMat();
+		std::vector<float> labelvec = label.getMat();
 		std::vector<int> idxvec = getIdxVector(dataMat.rows, sampleIdx.getMat());
-		std::vector<double> class_label = labelvec;
-		std::sort(class_label.begin(),class_label.end());
-		class_label.erase( unique(class_label.begin(), class_label.end()), class_label.end() );
 		
 		//scaling
 		normalize(dataMat, dataMat);
 
-		std::vector<double> weightvec = weight.getMat();
+		std::vector<float> class_label;
+		class_label.reserve(idxvec.size());
+
+		std::vector<float> weightvec = weight.getMat();
 		for (auto it = idxvec.begin(); it != idxvec.end();){
 			if (!weightvec.empty() && weightvec[*it] == 0.0){
 				it = idxvec.erase(it);
 			} else{
+				class_label.push_back(labelvec[*it]);
 				++it;
 			}
 		}
+		std::sort(class_label.begin(),class_label.end());
+		class_label.erase( unique(class_label.begin(), class_label.end()), class_label.end() );
 
 		// load model file
 		if (!param.save_path.empty()){
@@ -79,7 +82,9 @@ namespace cv_wrapper {
 			LibLinear::problem prob;
 			LibLinear::feature_node *prob_vec;
 
-			if (trained_flag) free_and_destroy_model(&model);
+			if (trained_flag){
+				free_and_destroy_model(&model);
+			}
 
 			const int MAX_DIM = dataMat.cols;
 			const int MAX_SAMPLE = idxvec.size();
@@ -130,9 +135,9 @@ namespace cv_wrapper {
 		if (!param.save_path.empty()) LibLinear::save_model(param.save_path.c_str(), model);
 	}
 
-	double LibLinearClassifier::predict(const cv::Mat& data)
+	float LibLinearClassifier::predict(const cv::Mat& data)
 	{
-		double label=-1.0;
+		float label=-1.0;
 		if (data.empty()) return label;
 
 		assert(data.type() == CV_32FC1);
@@ -160,9 +165,9 @@ namespace cv_wrapper {
 		}
 		return label;
 	}
-	std::map<double,double> LibLinearClassifier::predict_probability(const cv::Mat& data)
+	std::map<float,float> LibLinearClassifier::predict_probability(const cv::Mat& data)
 	{
-		std::map<double,double> ret;
+		std::map<float,float> ret;
 		if (data.empty()) return ret;
 
 		assert(data.type() == CV_32FC1);

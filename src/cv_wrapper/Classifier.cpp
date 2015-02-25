@@ -21,7 +21,7 @@ namespace cv_wrapper{
 		}
 	}
 
-	void Classifier::train_scale(cv::InputArray data,double minVal,double maxVal){
+	void Classifier::train_scale(cv::InputArray data,float minVal,float maxVal){
 		cv::Mat dataMat = data.getMat();
 		norm_coef = cv::Mat::zeros(1, dataMat.cols, CV_32FC1);
 		norm_bias = cv::Mat::zeros(1, dataMat.cols, CV_32FC1);
@@ -34,17 +34,15 @@ namespace cv_wrapper{
 			double _minVal, _maxVal;
 			cv::minMaxLoc(data_row, &_minVal, &_maxVal);
 
-			double diff = _maxVal - _minVal;
-			double s_diff = maxVal - minVal;
+			float diff = _maxVal - _minVal;
+			float s_diff = maxVal - minVal;
 
-			double bias = (diff == 0.0)? 0.0 :-_minVal*s_diff / diff + minVal;
-			double coef = (diff == 0.0)? 0.0 : s_diff / diff;
+			float bias = (diff == 0.0)? 0.0 :-_minVal*s_diff / diff + minVal;
+			float coef = (diff == 0.0)? 0.0 : s_diff / diff;
 
 			coefLine[c] = coef;
 			biasLine[c] = bias;
 		}
-		std::cout << norm_coef << std::endl;
-		std::cout << norm_bias << std::endl;
 	}
 	std::vector<int> Classifier::getIdxVector(int sample_size,const cv::Mat& idxmat){
 		assert(idxmat.empty() || idxmat.type() == CV_32SC1);
